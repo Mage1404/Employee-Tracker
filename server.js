@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 const employeerole = ['Sales Lead', 'Lead Engineer', 'Account Manager', 'Legal Team Lead', 'Sale Person', 'Accountant', 'Lawyer'];
 const managerlist = ['null', 'John A', 'Asheley C', 'Kunal E', 'Sarah G'];
+const departmentlist = ['Sales', 'Engineering', 'Finance', 'Legal'];
 // Express middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -84,7 +85,9 @@ function actionlist() {
                       VALUES
                       ('${answers.firstname}', '${answers.lastname}', ${role}, ${managerid});`;
           db.query(sql, (err, answers) => {
+            console.log('——————————————————');
             console.log('New employee added');
+            console.log('——————————————————');
             actionlist();
         });
         });
@@ -97,13 +100,88 @@ function actionlist() {
           actionlist();
         });
       } else if (action == 'Add Role') {
-        actionlist();
+        inquirer.prompt([
+          {
+            type: 'input',
+            name: 'title',
+            message: 'What is title of this role? (required)',
+            validate: role => {
+              if (role) {
+                return true;
+              } else {
+                console.log('Please enter the title!');
+                return false;
+              }
+            }
+          },
+          {
+            type: 'input',
+            name: 'salary',
+            message: 'What is your new role salary? (required)',
+            validate: salary => {
+              if (salary) {
+                return true;
+              } else {
+                console.log('Please enter the salary!');
+                return false;
+              }
+            }
+          },
+          {
+            type: 'list',
+            name: 'department',
+            message: 'which department does this role belong to? (required)',
+            choices: departmentlist
+          }
+        ]).then(answers => {
+          const role = (departmentlist.indexOf(answers.department) + 1);
+          const sql = `INSERT INTO role
+                      (title, salary, department_id)
+                      VALUES
+                      ('${answers.title}', '${answers.salary}', ${role});`;
+          db.query(sql, (err, answers) => {
+            console.log('——————————————');
+            console.log('New role added');
+            console.log('——————————————');
+            actionlist();
+        });
+        });
       } else if (action == 'View All Departments') {
-        actionlist();
+        const sql = `SELECT * FROM department`;
+        db.query(sql, (err, answers) => {
+          console.table(answers);
+          actionlist();
+        });
       } else if (action == 'Add Department') {
-        actionlist();
+        inquirer.prompt(
+          {
+            type: 'input',
+            name: 'name',
+            message: 'What is your new department name? (required)',
+            validate: nameInput => {
+              if (nameInput) {
+                return true;
+              } else {
+                console.log('Please enter the department name!');
+                return false;
+              }
+            }
+          }).then(answers => {
+            const sql = `INSERT INTO department
+                        (name)
+                        VALUES
+                        (${answers.name}),`
+            db.query(sql, (err, answers) => {
+            console.log('——————————————');
+            console.log('New department added');
+            console.log('——————————————');
+            actionlist();
+          })});
       } else if (action == 'Quit') {
-        return;
+        console.log('——————————————');
+        console.log('Stop Server');
+        console.log('——————————————');
+        process.exit();
       }
     });
 };
