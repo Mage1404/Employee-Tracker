@@ -15,6 +15,7 @@ app.use((req, res) => {
 
 
 function actionlist() {
+  //creating variable to restore data from sql so that's easier when doing inquirer
   var employeegroup = [];
   var managergroup = ['null'];
   var rolegroup = [];
@@ -43,6 +44,7 @@ function actionlist() {
             choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit']
           })
           .then(({ action }) => {
+            // first option
             if (action == 'View All Employees') {
             const sql = `SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, employeename.manager_name
                         FROM employee 
@@ -50,9 +52,11 @@ function actionlist() {
                         LEFT JOIN employeename ON employee.manager_id = employeename.id;`;
             db.query(sql, (err, answers) => {
               console.table(answers);
+              // go back to the beginning of this function if not quit
               actionlist();
             });
             } else if (action == 'Add Employee') {
+              // add empolyee function
               inquirer.prompt([
                 {
                   type: 'input',
@@ -109,6 +113,7 @@ function actionlist() {
               });
               });
             } else if (action == 'Update Employee Role') {
+              //update employee function
               inquirer.prompt([
                 {
                   type: 'list',
@@ -136,12 +141,14 @@ function actionlist() {
               });
               });
             } else if (action == 'View All Roles') {
+              // function that display all roles
               const sql = `SELECT * FROM role`;
               db.query(sql, (err, answers) => {
                 console.table(answers);
                 actionlist();
               });
             } else if (action == 'Add Role') {
+              // add new role function
               inquirer.prompt([
                 {
                   type: 'input',
@@ -177,7 +184,7 @@ function actionlist() {
                 }
               ]).then(answers => {
                 const role = (departmentgroup.indexOf(answers.department) + 1);
-                employeerole.push(answers.title);
+                rolegroup.push(answers.title);
                 const sql = `INSERT INTO role
                             (title, salary, department_id)
                             VALUES
@@ -190,12 +197,14 @@ function actionlist() {
               });
               });
             } else if (action == 'View All Departments') {
+              // view all departmetns function
               const sql = `SELECT * FROM department`;
               db.query(sql, (err, answers) => {
                 console.table(answers);
                 actionlist();
               });
             } else if (action == 'Add Department') {
+              // add new department
               inquirer.prompt(
                 {
                   type: 'input',
@@ -222,6 +231,7 @@ function actionlist() {
                   actionlist();
                 })});
             } else if (action == 'Quit') {
+              //quit app
               console.log('——————————————');
               console.log('Stop Server');
               console.log('——————————————');
